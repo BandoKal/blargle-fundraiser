@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build_and_deploy:
+  build:
     runs-on: ubuntu-latest
     permissions:
         contents: write
@@ -21,17 +21,31 @@ jobs:
       with:
         node-version: '16' 
 
-    - name: Hydrate site with data 🌊
-      run: |
-        yarn hydrate ""
-
     - name: Install and Build 🔧
       run: |
         yarn install
         yarn build
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          # Upload entire repository
+          path: 'build'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
 
-    - name: Deploy to GitHub Pages 🚀
-      uses: JamesIves/github-pages-deploy-action@4.1.0
-      with:
-        branch: gh-pages
-        folder: build
+    # - name: Deploy to GitHub Pages 🚀
+    #   uses: JamesIves/github-pages-deploy-action@4.1.0
+    #   with:
+    #     branch: gh-pages
+    #     folder: build
